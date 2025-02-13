@@ -162,6 +162,7 @@ export default {
 						{ status: 404, headers: { "Content-Type": "text/html" } }
 					);
 				}
+
 				// Embed code snippet and the RSVP URL using the current origin.
 				const embedCode = `<iframe src="${url.origin}/?event=${eventId}" width="600" height="400" frameborder="0"></iframe>`;
 				const rsvpUrl = `${url.origin}/?event=${eventId}`;
@@ -325,7 +326,7 @@ export default {
 								rsvpHtml = `<p class="text-gray-500">No RSVPs yet.</p>`;
 							}
 
-							// Build the iframe embed code for this event.
+							// Build the iframe embed code for particular event.
 							const embedCode = `<iframe src="${url.origin}/?event=${eventId}" width="600" height="400" frameborder="0"></iframe>`;
 
 							cardsHtml += `
