@@ -1,6 +1,6 @@
 export default {
 	async fetch(request, env) {
-		// Use Tailwind exclusively for a responsive, dark mode UI.
+
 		const renderPage = content => `
 		<!DOCTYPE html>
 		<html lang="en">
@@ -22,7 +22,7 @@ export default {
 			const url = new URL(request.url);
 			const { pathname, searchParams } = url;
 
-			// Redesigned Homepage (hero section)
+			// Homepage (hero section)
 			if (pathname === "/" && !searchParams.has("event")) {
 				return new Response(
 					renderPage(`
@@ -41,7 +41,7 @@ export default {
 				);
 			}
 
-			// Redesigned RSVP Page for Iframe Preview (when ?event=<id> is provided)
+			// RSVP Page for Iframe Preview (when ?event=<id> is provided)
 			if (pathname === "/" && searchParams.has("event")) {
 				const eventId = searchParams.get("event");
 				const event = await env.EVENTS.get(`event_${eventId}`, "json");
@@ -61,9 +61,8 @@ export default {
 					);
 				}
 
-				// Redesigned iframe preview:
-				// The event info is displayed in a header section with bold, large text.
-				// The RSVP form is placed in a contrasting container below.
+
+				// RSVP form
 				return new Response(
 					renderPage(`
 						<div class="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden">
@@ -164,7 +163,8 @@ export default {
 						{ status: 404, headers: { "Content-Type": "text/html" } }
 					);
 				}
-				// Build the embed code snippet and the RSVP URL using the current origin.
+
+				// Embed code snippet and the RSVP URL using the current origin.
 				const embedCode = `<iframe src="${url.origin}/?event=${eventId}" width="600" height="400" frameborder="0"></iframe>`;
 				const rsvpUrl = `${url.origin}/?event=${eventId}`;
 				return new Response(
@@ -249,7 +249,7 @@ export default {
 							event.creatorEmail.toLowerCase() === creatorEmail.toLowerCase()
 					);
 
-					// For each event, retrieve its RSVPs.
+					// For each event, get RSVPs.
 					for (const event of filteredEvents) {
 						const eventId = event.key.replace("event_", "");
 						const rsvpList = await env.RSVPS.list({ prefix: `rsvp_${eventId}_` });
@@ -259,7 +259,7 @@ export default {
 						event.rsvps = rsvps.filter(Boolean);
 					}
 
-					// Build event cards.
+					// Event cards.
 					let cardsHtml = "";
 					if (filteredEvents.length === 0) {
 						cardsHtml = `<p class="text-center">No events found for ${creatorEmail}</p>`;
@@ -288,7 +288,7 @@ export default {
 							} else {
 								rsvpHtml = `<p class="text-gray-500">No RSVPs yet.</p>`;
 							}
-							// Build a smaller card using Tailwind.
+
 							cardsHtml += `
 							<div class="bg-gray-900 rounded-md shadow-md p-3 mb-4 cursor-pointer event-card"
 							     data-event-name="${event.name}"
@@ -304,7 +304,6 @@ export default {
 						}
 					}
 
-					// The final page contains the event cards and a Tailwind modal.
 					return new Response(
 						renderPage(`
 							<div class="bg-gray-900 rounded-md p-6 shadow-md">
