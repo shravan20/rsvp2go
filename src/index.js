@@ -14,6 +14,19 @@ export default {
 		  <div class="container mx-auto p-4 max-w-4xl">
 			${content}
 		  </div>
+
+		  <footer class="mt-8 text-center text-sm text-gray-500">
+			<a href="https://github.com/your-github-repo" target="_blank"
+				class="inline-flex items-center px-4 py-2 border border-gray-500 rounded hover:bg-gray-700 hover:text-white transition-colors">
+				<img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo" class="h-5 w-5 mr-2">
+				<span>View on GitHub</span>
+			</a>
+			<p class="mt-2">
+				<img src="https://madewithlove.now.sh/in?heart=true&colorA=%23ff671f&colorB=%23046a38&text=India"
+					alt="Made with Love in India" class="mx-auto">
+			</p>
+		  </footer>
+
 		</body>
 		</html>
 	  `;
@@ -68,7 +81,9 @@ export default {
 						  <div class="px-6 py-8">
 							<h1 class="text-3xl font-bold text-white">Event Name: ${event.name}</h1>
 							<p class="mt-2 text-xl text-purple-400">📅 ${event.date}</p>
-							${event.timezone ? `<p class="text-xl text-purple-400">🌐 Timezone: ${event.timezone}</p>` : ""}
+							${event.timezone
+							? `<p class="text-xl text-purple-400">🌐 Timezone: ${event.timezone}</p>`
+							: ""}
 							<p class="mt-2 text-xl text-purple-400">✏️ Description: ${event.description}</p>
 						  </div>
 						  <div class="bg-gray-700 px-6 py-4">
@@ -145,7 +160,11 @@ export default {
 			}
 
 			// Share Page (GET /share?event=...)
-			if (pathname === "/share" && request.method === "GET" && searchParams.has("event")) {
+			if (
+				pathname === "/share" &&
+				request.method === "GET" &&
+				searchParams.has("event")
+			) {
 				const eventId = searchParams.get("event");
 				const event = await env.EVENTS.get(`event_${eventId}`, "json");
 				if (!event) {
@@ -184,13 +203,22 @@ export default {
 							<p class="mb-2">Share this event:</p>
 							<div class="flex space-x-2">
 							  <!-- WhatsApp Share -->
-							  <a href="https://wa.me/?text=${encodeURIComponent('Check out this RSVP page: ' + url.origin + '/?event=' + eventId)}"
+							  <a href="https://wa.me/?text=${encodeURIComponent(
+						"Check out this RSVP page: " +
+						url.origin +
+						"/?event=" +
+						eventId
+					)}"
 								target="_blank"
 								class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">
 								WhatsApp
 							  </a>
 							  <!-- Email Share -->
-							  <a href="mailto:?subject=${encodeURIComponent('RSVP Invitation')}&body=${encodeURIComponent('Check out this RSVP page: ' + url.origin + '/?event=' + eventId)}"
+							  <a href="mailto:?subject=${encodeURIComponent(
+						"RSVP Invitation"
+					)}&body=${encodeURIComponent(
+						"Check out this RSVP page: " + url.origin + "/?event=" + eventId
+					)}"
 								class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">
 								Email
 							  </a>
@@ -271,13 +299,15 @@ export default {
 					const creatorEmail = searchParams.get("email");
 					// List all events with the "event_" prefix.
 					const list = await env.EVENTS.list({ prefix: "event_" });
-					const events = await Promise.all(list.keys.map(async (key) => {
-						const eventData = await env.EVENTS.get(key.name, "json");
-						if (eventData) {
-							return { key: key.name, ...eventData };
-						}
-						return null;
-					}));
+					const events = await Promise.all(
+						list.keys.map(async key => {
+							const eventData = await env.EVENTS.get(key.name, "json");
+							if (eventData) {
+								return { key: key.name, ...eventData };
+							}
+							return null;
+						})
+					);
 					const filteredEvents = events.filter(
 						event =>
 							event &&
@@ -288,10 +318,14 @@ export default {
 					// For each event, get RSVPs.
 					for (const event of filteredEvents) {
 						const eventId = event.key.replace("event_", "");
-						const rsvpList = await env.RSVPS.list({ prefix: `rsvp_${eventId}_` });
-						const rsvps = await Promise.all(rsvpList.keys.map(async (key) => {
-							return await env.RSVPS.get(key.name, "json");
-						}));
+						const rsvpList = await env.RSVPS.list({
+							prefix: `rsvp_${eventId}_`
+						});
+						const rsvps = await Promise.all(
+							rsvpList.keys.map(async key => {
+								return await env.RSVPS.get(key.name, "json");
+							})
+						);
 						event.rsvps = rsvps.filter(Boolean);
 					}
 
@@ -333,11 +367,15 @@ export default {
 							<div class="bg-gray-900 rounded-md shadow-md p-3 mb-4 cursor-pointer event-card"
 							     data-event-id="${eventId}"
 							     data-event-name="${event.name}"
-							     data-event-date="Date: ${event.date}${event.timezone ? " | Timezone: " + event.timezone : ""}"
+							     data-event-date="Date: ${event.date}${event.timezone
+									? " | Timezone: " + event.timezone
+									: ""}"
 							     data-rsvp='${JSON.stringify(rsvpHtml)}'
 							     data-embed='${JSON.stringify(embedCode)}'>
 							  <h2 class="text-xl font-bold">${event.name}</h2>
-							  <p class="text-sm text-gray-500 mt-1">Date: ${event.date}${event.timezone ? " | " + event.timezone : ""}</p>
+							  <p class="text-sm text-gray-500 mt-1">Date: ${event.date}${event.timezone
+									? " | " + event.timezone
+									: ""}</p>
 							  <p class="mt-1 text-sm">${event.description}</p>
 							  <span class="mt-2 inline-block bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-xs font-semibold">
 							    View RSVPs
