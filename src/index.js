@@ -181,6 +181,28 @@ export default {
 							<input id="rsvpUrl" class="w-full p-2 rounded bg-gray-800 border border-gray-700" value="${rsvpUrl}" readonly />
 							<button id="copyUrlButton" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy URL</button>
 						  </div>
+
+						  <div class="mb-6">
+							<p class="mb-2">Share this event:</p>
+							<div class="flex space-x-2">
+							<!-- WhatsApp Share -->
+							<a href="https://wa.me/?text=${encodeURIComponent('Check out this RSVP page: ' + url.origin + '/?event=' + eventId)}"
+								target="_blank"
+								class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">
+								WhatsApp
+							</a>
+							<!-- Email Share -->
+							<a href="mailto:?subject=${encodeURIComponent('RSVP Invitation')}&body=${encodeURIComponent('Check out this RSVP page: ' + url.origin + '/?event=' + eventId)}"
+								class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">
+								Email
+							</a>
+							<!-- Native Share (for mobile devices) -->
+							<button id="nativeShareBtn" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded">
+								Share
+							</button>
+							</div>
+						</div>
+
 						  <div class="mt-4">
 							<h2 class="text-lg font-semibold mb-2">Preview:</h2>
 							<iframe src="${url.origin}/?event=${eventId}" class="w-full" height="400" frameborder="0"></iframe>
@@ -198,6 +220,7 @@ export default {
 							  .then(() => { alert('Embed code copied to clipboard!'); })
 							  .catch(err => { alert('Failed to copy embed code.'); });
 						  });
+
 						  document.getElementById('copyUrlButton').addEventListener('click', function() {
 							const rsvpUrlInput = document.getElementById('rsvpUrl');
 							rsvpUrlInput.select();
@@ -206,6 +229,24 @@ export default {
 							  .then(() => { alert('RSVP URL copied to clipboard!'); })
 							  .catch(err => { alert('Failed to copy RSVP URL.'); });
 						  });
+
+						// Native Share button (uses Web Share API)
+						document.getElementById('nativeShareBtn').addEventListener('click', async function() {
+							const rsvpUrl = document.getElementById('rsvpUrl').value;
+							if (navigator.share) {
+							try {
+								await navigator.share({
+								title: 'RSVP Invitation',
+								text: 'Check out this RSVP page!',
+								url: rsvpUrl,
+								});
+							} catch (err) {
+								console.error('Error sharing:', err);
+							}
+							} else {
+							alert('Native sharing is not supported on this device.');
+							}
+						});
 						<\/script>
 					`),
 					{ headers: { "Content-Type": "text/html" } }
