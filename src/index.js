@@ -7,6 +7,7 @@ export default {
 		  <meta charset="UTF-8" />
 		  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		  <title>rsvp2go</title>
+		  <link rel="icon" href="/logo.png" type="image/png">
 		  <script src="https://cdn.tailwindcss.com"></script>
 		</head>
 		<body class="bg-black text-gray-300 font-sans">
@@ -26,8 +27,8 @@ export default {
 				return new Response(
 					renderPage(`
 						<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
-						  <h1 class="text-3xl font-bold mb-4">rsvp2go</h1>
-						  <p>rsvp2go is a free event RSVP app with no signups required.</p>
+						  <img src="/logo.png" alt="rsvp2go Logo" class="mx-auto mb-4 h-32 w-32">
+						  <p>A free event RSVP app with no signups required.</p>
 						  <p class="mt-2">Manage your event in one place. Share via WhatsApp, SMS, or email.</p>
 						  <p class="mt-2">Free · No personal details · Calendar integration</p>
 						  <div class="mt-6 space-y-3">
