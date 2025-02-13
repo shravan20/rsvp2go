@@ -22,11 +22,11 @@ export default {
 			const url = new URL(request.url);
 			const { pathname, searchParams } = url;
 
-			// Landing Page at "/" (no query params)
+			// Redesigned Homepage (hero section)
 			if (pathname === "/" && !searchParams.has("event")) {
 				return new Response(
 					renderPage(`
-				<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
+						<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
 				  <h1 class="text-3xl font-bold mb-4">RSVPnGo</h1>
 				  <p>RSVPnGo is a free event RSVP app with no signups required.</p>
 				  <p class="mt-2">Manage your event in one place. Share via WhatsApp, SMS, or email.</p>
@@ -36,12 +36,12 @@ export default {
 					<a href="/preview" class="block border border-gray-700 hover:border-gray-600 rounded px-4 py-2 font-medium">Preview RSVPs</a>
 				  </div>
 				</div>
-			  `),
+					`),
 					{ headers: { "Content-Type": "text/html" } }
 				);
 			}
 
-			// RSVP Page (when ?event=<id> is provided on the "/" path)
+			// Redesigned RSVP Page for Iframe Preview (when ?event=<id> is provided)
 			if (pathname === "/" && searchParams.has("event")) {
 				const eventId = searchParams.get("event");
 				const event = await env.EVENTS.get(`event_${eventId}`, "json");
@@ -49,47 +49,49 @@ export default {
 				if (!event) {
 					return new Response(
 						renderPage(`
-					<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
-					  <h2 class="text-xl font-bold mb-2">Event Not Found</h2>
-					  <p>This event doesn't exist or has expired.</p>
-					  <div class="mt-4">
-						<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-					  </div>
-					</div>
-				  `),
+							<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
+							  <h2 class="text-xl font-bold mb-2">Event Not Found</h2>
+							  <p>This event doesn't exist or has expired.</p>
+							  <div class="mt-4">
+								<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
+							  </div>
+							</div>
+						`),
 						{ status: 404, headers: { "Content-Type": "text/html" } }
 					);
 				}
 
+				// Redesigned iframe preview:
+				// The event info is displayed in a header section with bold, large text.
+				// The RSVP form is placed in a contrasting container below.
 				return new Response(
 					renderPage(`
-				<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
-				  <div class="mb-4">
-					<h1 class="text-2xl font-bold">${event.name}</h1>
-					<p class="text-sm text-purple-400">📅 ${event.date}</p>
-					${event.timezone ? `<p class="text-sm text-purple-400">Timezone: ${event.timezone}</p>` : ""}
-					<p class="mt-2 text-sm opacity-75">${event.description}</p>
-				  </div>
-				  <form id="rsvpForm" class="space-y-3">
-					<input name="name" placeholder="Your Name" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-					<input type="email" name="email" placeholder="Email" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-					<input type="hidden" name="eventId" value="${eventId}">
-					<button class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-medium">Submit RSVP</button>
-				  </form>
-				  <div class="mt-4 text-center">
-					<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-				  </div>
-				</div>
-				<script>
-				  document.getElementById('rsvpForm').addEventListener('submit', async (e) => {
-					e.preventDefault();
-					const formData = new FormData(e.target);
-					await fetch('/rsvp', { method: 'POST', body: formData });
-					alert('Thank you for RSVPing!');
-					e.target.reset();
-				  });
-				<\/script>
-			  `),
+						<div class="max-w-md mx-auto bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+						  <div class="px-6 py-8">
+							<h1 class="text-3xl font-bold text-white">Event Name: ${event.name}</h1>
+							<p class="mt-2 text-xl text-purple-400">📅 ${event.date}</p>
+							${event.timezone ? `<p class="text-xl text-purple-400">🌐 Timezone: ${event.timezone}</p>` : ""}
+							<p class="mt-2 text-xl text-purple-400"> ✏️ Description: ${event.description}</p>
+						  </div>
+						  <div class="bg-gray-700 px-6 py-4">
+							<form id="rsvpForm" class="space-y-3">
+							  <input name="name" placeholder="Your Name" class="w-full p-2 rounded bg-gray-600 border border-gray-500" required>
+							  <input type="email" name="email" placeholder="Email" class="w-full p-2 rounded bg-gray-600 border border-gray-500" required>
+							  <input type="hidden" name="eventId" value="${eventId}">
+							  <button class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-medium">Submit RSVP</button>
+							</form>
+						  </div>
+						</div>
+						<script>
+						  document.getElementById('rsvpForm').addEventListener('submit', async (e) => {
+							e.preventDefault();
+							const formData = new FormData(e.target);
+							await fetch('/rsvp', { method: 'POST', body: formData });
+							alert('Thank you for RSVPing!');
+							e.target.reset();
+						  });
+						<\/script>
+					`),
 					{ headers: { "Content-Type": "text/html" } }
 				);
 			}
@@ -98,31 +100,31 @@ export default {
 			if (pathname === "/create" && request.method === "GET") {
 				return new Response(
 					renderPage(`
-				<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
-				  <h1 class="text-2xl font-bold mb-4">Create Event</h1>
-				  <form id="createForm" class="space-y-3">
-					<input name="name" placeholder="What's the event?" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-					<input type="date" name="date" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-					<input name="timezone" placeholder="Time Zone (e.g. America/New_York)" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-					<textarea name="description" placeholder="Description" class="w-full p-2 rounded bg-gray-800 border border-gray-700" rows="3"></textarea>
-					<input type="email" name="creatorEmail" placeholder="Your Email (for preview)" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-					<button class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-medium">Start Inviting &gt;</button>
-				  </form>
-				  <div class="mt-4 text-center">
-					<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-				  </div>
-				</div>
-				<script>
-				  document.getElementById('createForm').addEventListener('submit', async (e) => {
-					e.preventDefault();
-					const formData = new FormData(e.target);
-					const res = await fetch('/create', { method: 'POST', body: formData });
-					const { eventId } = await res.json();
-					// Redirect to the Share page so host can copy the embed code.
-					window.location = \`/share?event=\${eventId}\`;
-				  });
-				<\/script>
-			  `),
+						<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
+						  <h1 class="text-2xl font-bold mb-4">Create Event</h1>
+						  <form id="createForm" class="space-y-3">
+							<input name="name" placeholder="What's the event?" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
+							<input type="date" name="date" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
+							<input name="timezone" placeholder="Time Zone (e.g. America/New_York)" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
+							<textarea name="description" placeholder="Description" class="w-full p-2 rounded bg-gray-800 border border-gray-700" rows="3"></textarea>
+							<input type="email" name="creatorEmail" placeholder="Your Email (for preview)" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
+							<button class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-medium">Start Inviting &gt;</button>
+						  </form>
+						  <div class="mt-4 text-center">
+							<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
+						  </div>
+						</div>
+						<script>
+						  document.getElementById('createForm').addEventListener('submit', async (e) => {
+							e.preventDefault();
+							const formData = new FormData(e.target);
+							const res = await fetch('/create', { method: 'POST', body: formData });
+							const { eventId } = await res.json();
+							// Redirect to the Share page so host can copy embed code.
+							window.location = \`/share?event=\${eventId}\`;
+						  });
+						<\/script>
+					`),
 					{ headers: { "Content-Type": "text/html" } }
 				);
 			}
@@ -151,14 +153,14 @@ export default {
 				if (!event) {
 					return new Response(
 						renderPage(`
-					<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
-					  <h2 class="text-xl font-bold mb-2">Event Not Found</h2>
-					  <p>This event doesn't exist or has expired.</p>
-					  <div class="mt-4">
-						<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-					  </div>
-					</div>
-				  `),
+							<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
+							  <h2 class="text-xl font-bold mb-2">Event Not Found</h2>
+							  <p>This event doesn't exist or has expired.</p>
+							  <div class="mt-4">
+								<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
+							  </div>
+							</div>
+						`),
 						{ status: 404, headers: { "Content-Type": "text/html" } }
 					);
 				}
@@ -167,45 +169,45 @@ export default {
 				const rsvpUrl = `${url.origin}/?event=${eventId}`;
 				return new Response(
 					renderPage(`
-				<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
-				  <h1 class="text-xl font-bold mb-4">Share Your RSVP Page</h1>
-				  <div class="mb-6">
-					<p class="mb-2">Embed Code:</p>
-					<textarea id="embedCode" class="w-full p-2 rounded bg-gray-800 border border-gray-700" rows="4" readonly>${embedCode}</textarea>
-					<button id="copyEmbedButton" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy Embed Code</button>
-				  </div>
-				  <div class="mb-6">
-					<p class="mb-2">RSVP URL:</p>
-					<input id="rsvpUrl" class="w-full p-2 rounded bg-gray-800 border border-gray-700" value="${rsvpUrl}" readonly />
-					<button id="copyUrlButton" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy URL</button>
-				  </div>
-				  <div class="mt-4">
-					<h2 class="text-lg font-semibold mb-2">Preview:</h2>
-					<iframe src="${url.origin}/?event=${eventId}" class="w-full" height="400" frameborder="0"></iframe>
-				  </div>
-				  <div class="mt-4 text-center">
-					<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-				  </div>
-				</div>
-				<script>
-				  document.getElementById('copyEmbedButton').addEventListener('click', function() {
-					const embedTextarea = document.getElementById('embedCode');
-					embedTextarea.select();
-					embedTextarea.setSelectionRange(0, 99999);
-					navigator.clipboard.writeText(embedTextarea.value)
-					  .then(() => { alert('Embed code copied to clipboard!'); })
-					  .catch(err => { alert('Failed to copy embed code.'); });
-				  });
-				  document.getElementById('copyUrlButton').addEventListener('click', function() {
-					const rsvpUrlInput = document.getElementById('rsvpUrl');
-					rsvpUrlInput.select();
-					rsvpUrlInput.setSelectionRange(0, 99999);
-					navigator.clipboard.writeText(rsvpUrlInput.value)
-					  .then(() => { alert('RSVP URL copied to clipboard!'); })
-					  .catch(err => { alert('Failed to copy RSVP URL.'); });
-				  });
-				<\/script>
-			  `),
+						<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
+						  <h1 class="text-xl font-bold mb-4">Share Your RSVP Page</h1>
+						  <div class="mb-6">
+							<p class="mb-2">Embed Code:</p>
+							<textarea id="embedCode" class="w-full p-2 rounded bg-gray-800 border border-gray-700" rows="4" readonly>${embedCode}</textarea>
+							<button id="copyEmbedButton" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy Embed Code</button>
+						  </div>
+						  <div class="mb-6">
+							<p class="mb-2">RSVP URL:</p>
+							<input id="rsvpUrl" class="w-full p-2 rounded bg-gray-800 border border-gray-700" value="${rsvpUrl}" readonly />
+							<button id="copyUrlButton" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy URL</button>
+						  </div>
+						  <div class="mt-4">
+							<h2 class="text-lg font-semibold mb-2">Preview:</h2>
+							<iframe src="${url.origin}/?event=${eventId}" class="w-full" height="400" frameborder="0"></iframe>
+						  </div>
+						  <div class="mt-4 text-center">
+							<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
+						  </div>
+						</div>
+						<script>
+						  document.getElementById('copyEmbedButton').addEventListener('click', function() {
+							const embedTextarea = document.getElementById('embedCode');
+							embedTextarea.select();
+							embedTextarea.setSelectionRange(0, 99999);
+							navigator.clipboard.writeText(embedTextarea.value)
+							  .then(() => { alert('Embed code copied to clipboard!'); })
+							  .catch(err => { alert('Failed to copy embed code.'); });
+						  });
+						  document.getElementById('copyUrlButton').addEventListener('click', function() {
+							const rsvpUrlInput = document.getElementById('rsvpUrl');
+							rsvpUrlInput.select();
+							rsvpUrlInput.setSelectionRange(0, 99999);
+							navigator.clipboard.writeText(rsvpUrlInput.value)
+							  .then(() => { alert('RSVP URL copied to clipboard!'); })
+							  .catch(err => { alert('Failed to copy RSVP URL.'); });
+						  });
+						<\/script>
+					`),
 					{ headers: { "Content-Type": "text/html" } }
 				);
 			}
@@ -216,17 +218,17 @@ export default {
 				if (!searchParams.has("email")) {
 					return new Response(
 						renderPage(`
-					<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
-					  <h1 class="text-2xl font-bold mb-4">Preview Your Events</h1>
-					  <form id="previewForm" class="space-y-3" method="GET" action="/preview">
-						<input type="email" name="email" placeholder="Enter your email" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
-						<button class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-medium">Preview</button>
-					  </form>
-					  <div class="mt-4 text-center">
-						<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-					  </div>
-					</div>
-				  `),
+							<div class="bg-gray-900 rounded-lg p-6 shadow-lg">
+							  <h1 class="text-2xl font-bold mb-4">Preview Your Events</h1>
+							  <form id="previewForm" class="space-y-3" method="GET" action="/preview">
+								<input type="email" name="email" placeholder="Enter your email" class="w-full p-2 rounded bg-gray-800 border border-gray-700" required>
+								<button class="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded font-medium">Preview</button>
+							  </form>
+							  <div class="mt-4 text-center">
+								<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
+							  </div>
+							</div>
+						`),
 						{ headers: { "Content-Type": "text/html" } }
 					);
 				} else {
@@ -305,40 +307,40 @@ export default {
 					// The final page contains the event cards and a Tailwind modal.
 					return new Response(
 						renderPage(`
-					<div class="bg-gray-900 rounded-md p-6 shadow-md">
-					  <h1 class="text-2xl font-bold mb-4">Your Created Events</h1>
-					  <div id="eventCards">
-					    ${cardsHtml}
-					  </div>
-					  <div class="mt-4 text-center">
-						<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
-					  </div>
-					</div>
-					<!-- Modal using Tailwind classes -->
-					<div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-					  <div class="bg-gray-900 p-6 rounded-md relative w-11/12 max-w-lg shadow-lg">
-						<button id="modalClose" class="absolute top-2 right-2 text-gray-300">X</button>
-						<div id="modalContent" class="text-gray-300"></div>
-					  </div>
-					</div>
-					<script>
-					  document.querySelectorAll('.event-card').forEach(card => {
-						card.addEventListener('click', function() {
-						  const eventName = card.getAttribute('data-event-name');
-						  const eventDate = card.getAttribute('data-event-date');
-						  const rsvpHtml = JSON.parse(card.getAttribute('data-rsvp'));
-						  const modalContent = document.getElementById('modalContent');
-						  modalContent.innerHTML = '<h2 class="text-2xl font-bold mb-2">' + eventName + '</h2>' +
-						                             '<p class="text-sm mb-4">' + eventDate + '</p>' +
-						                             rsvpHtml;
-						  document.getElementById('modalOverlay').classList.remove('hidden');
-						});
-					  });
-					  document.getElementById('modalClose').addEventListener('click', function() {
-						document.getElementById('modalOverlay').classList.add('hidden');
-					  });
-					<\/script>
-				  `),
+							<div class="bg-gray-900 rounded-md p-6 shadow-md">
+							  <h1 class="text-2xl font-bold mb-4">Your Created Events</h1>
+							  <div id="eventCards">
+							    ${cardsHtml}
+							  </div>
+							  <div class="mt-4 text-center">
+								<a href="/" class="text-sm text-gray-500 hover:underline">Back to Home</a>
+							  </div>
+							</div>
+							<!-- Modal using Tailwind classes -->
+							<div id="modalOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+							  <div class="bg-gray-900 p-6 rounded-md relative w-11/12 max-w-lg shadow-lg">
+								<button id="modalClose" class="absolute top-2 right-2 text-gray-300">X</button>
+								<div id="modalContent" class="text-gray-300"></div>
+							  </div>
+							</div>
+							<script>
+							  document.querySelectorAll('.event-card').forEach(card => {
+								card.addEventListener('click', function() {
+								  const eventName = card.getAttribute('data-event-name');
+								  const eventDate = card.getAttribute('data-event-date');
+								  const rsvpHtml = JSON.parse(card.getAttribute('data-rsvp'));
+								  const modalContent = document.getElementById('modalContent');
+								  modalContent.innerHTML = '<h2 class="text-2xl font-bold mb-2">' + eventName + '</h2>' +
+								                             '<p class="text-sm mb-4">' + eventDate + '</p>' +
+								                             rsvpHtml;
+								  document.getElementById('modalOverlay').classList.remove('hidden');
+								});
+							  });
+							  document.getElementById('modalClose').addEventListener('click', function() {
+								document.getElementById('modalOverlay').classList.add('hidden');
+							  });
+							<\/script>
+						`),
 						{ headers: { "Content-Type": "text/html" } }
 					);
 				}
@@ -365,11 +367,11 @@ export default {
 			console.error(err);
 			return new Response(
 				renderPage(`
-			<div class="bg-gray-900 rounded-lg p-6 text-center text-red-500">
-			  <h2 class="text-2xl font-bold mb-2">Error</h2>
-			  <p>${err.message}</p>
-			</div>
-		  `),
+					<div class="bg-gray-900 rounded-lg p-6 text-center text-red-500">
+					  <h2 class="text-2xl font-bold mb-2">Error</h2>
+					  <p>${err.message}</p>
+					</div>
+				`),
 				{ status: 500 }
 			);
 		}
