@@ -52,7 +52,7 @@ npm run deploy
 
 ### Create an Event 🎉
 
-1. Visit your Worker URL (e.g., `<https://rsvp-worker.your-username.workers.dev>`).
+1. Visit your Worker URL (e.g., `<https://rsvp2go.your-username.workers.dev>`).
 2. Fill out the event creation form.
 3. Copy the unique RSVP link.
 
@@ -61,7 +61,7 @@ npm run deploy
 ### Share the RSVP Link 📨
 
 ```url
-https://rsvp-worker.your-username.workers.dev/?event=abc123
+https://rsvp2go.your-username.workers.dev/?event=abc123
 ```
 
 ---
@@ -72,7 +72,7 @@ Use the following code to embed the RSVP form on your website:
 
 ```html
 <iframe
-  src="https://rsvp-worker.your-username.workers.dev/?event=abc123"
+  src="https://rsvp2go.your-username.workers.dev/?event=abc123"
   style="border:0; width:100%; height:500px; border-radius:12px;">
 </iframe>
 ```
