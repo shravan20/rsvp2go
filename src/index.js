@@ -1,6 +1,5 @@
 export default {
 	async fetch(request, env) {
-
 		const renderPage = content => `
 		<!DOCTYPE html>
 		<html lang="en">
@@ -8,6 +7,7 @@ export default {
 		  <meta charset="UTF-8" />
 		  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		  <title>rsvp2go</title>
+		  <link rel="icon" href="/logo.png" type="image/png">
 		  <script src="https://cdn.tailwindcss.com"></script>
 		</head>
 		<body class="bg-black text-gray-300 font-sans">
@@ -27,15 +27,15 @@ export default {
 				return new Response(
 					renderPage(`
 						<div class="bg-gray-900 rounded-lg p-6 text-center shadow-lg">
-				  <h1 class="text-3xl font-bold mb-4">rsvp2go</h1>
-				  <p>rsvp2go is a free event RSVP app with no signups required.</p>
-				  <p class="mt-2">Manage your event in one place. Share via WhatsApp, SMS, or email.</p>
-				  <p class="mt-2">Free · No personal details · Calendar integration</p>
-				  <div class="mt-6 space-y-3">
-					<a href="/create" class="block bg-purple-600 hover:bg-purple-700 rounded px-4 py-2 font-medium">Create Event</a>
-					<a href="/preview" class="block border border-gray-700 hover:border-gray-600 rounded px-4 py-2 font-medium">Preview RSVPs</a>
-				  </div>
-				</div>
+						  <img src="/logo.png" alt="rsvp2go Logo" class="mx-auto mb-4 h-32 w-32">
+						  <p>A free event RSVP app with no signups required.</p>
+						  <p class="mt-2">Manage your event in one place. Share via WhatsApp, SMS, or email.</p>
+						  <p class="mt-2">Free · No personal details · Calendar integration</p>
+						  <div class="mt-6 space-y-3">
+							<a href="/create" class="block bg-purple-600 hover:bg-purple-700 rounded px-4 py-2 font-medium">Create Event</a>
+							<a href="/preview" class="block border border-gray-700 hover:border-gray-600 rounded px-4 py-2 font-medium">Preview RSVPs</a>
+						  </div>
+						</div>
 					`),
 					{ headers: { "Content-Type": "text/html" } }
 				);
@@ -61,7 +61,6 @@ export default {
 					);
 				}
 
-
 				// RSVP form
 				return new Response(
 					renderPage(`
@@ -70,7 +69,7 @@ export default {
 							<h1 class="text-3xl font-bold text-white">Event Name: ${event.name}</h1>
 							<p class="mt-2 text-xl text-purple-400">📅 ${event.date}</p>
 							${event.timezone ? `<p class="text-xl text-purple-400">🌐 Timezone: ${event.timezone}</p>` : ""}
-							<p class="mt-2 text-xl text-purple-400"> ✏️ Description: ${event.description}</p>
+							<p class="mt-2 text-xl text-purple-400">✏️ Description: ${event.description}</p>
 						  </div>
 						  <div class="bg-gray-700 px-6 py-4">
 							<form id="rsvpForm" class="space-y-3">
@@ -181,6 +180,26 @@ export default {
 							<input id="rsvpUrl" class="w-full p-2 rounded bg-gray-800 border border-gray-700" value="${rsvpUrl}" readonly />
 							<button id="copyUrlButton" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy URL</button>
 						  </div>
+						  <div class="mb-6">
+							<p class="mb-2">Share this event:</p>
+							<div class="flex space-x-2">
+							  <!-- WhatsApp Share -->
+							  <a href="https://wa.me/?text=${encodeURIComponent('Check out this RSVP page: ' + url.origin + '/?event=' + eventId)}"
+								target="_blank"
+								class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">
+								WhatsApp
+							  </a>
+							  <!-- Email Share -->
+							  <a href="mailto:?subject=${encodeURIComponent('RSVP Invitation')}&body=${encodeURIComponent('Check out this RSVP page: ' + url.origin + '/?event=' + eventId)}"
+								class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">
+								Email
+							  </a>
+							  <!-- Native Share (for mobile devices) -->
+							  <button id="nativeShareBtn" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded">
+								Share
+							  </button>
+							</div>
+						  </div>
 						  <div class="mt-4">
 							<h2 class="text-lg font-semibold mb-2">Preview:</h2>
 							<iframe src="${url.origin}/?event=${eventId}" class="w-full" height="400" frameborder="0"></iframe>
@@ -205,6 +224,23 @@ export default {
 							navigator.clipboard.writeText(rsvpUrlInput.value)
 							  .then(() => { alert('RSVP URL copied to clipboard!'); })
 							  .catch(err => { alert('Failed to copy RSVP URL.'); });
+						  });
+						  // Native Share button (uses Web Share API)
+						  document.getElementById('nativeShareBtn').addEventListener('click', async function() {
+							const rsvpUrl = document.getElementById('rsvpUrl').value;
+							if (navigator.share) {
+							  try {
+								await navigator.share({
+								  title: 'RSVP Invitation',
+								  text: 'Check out this RSVP page!',
+								  url: rsvpUrl,
+								});
+							  } catch (err) {
+								console.error('Error sharing:', err);
+							  }
+							} else {
+							  alert('Native sharing is not supported on this device.');
+							}
 						  });
 						<\/script>
 					`),
@@ -265,6 +301,7 @@ export default {
 						cardsHtml = `<p class="text-center">No events found for ${creatorEmail}</p>`;
 					} else {
 						for (const event of filteredEvents) {
+							const eventId = event.key.replace("event_", "");
 							let rsvpHtml = "";
 							if (event.rsvps && event.rsvps.length > 0) {
 								rsvpHtml = `<table class="w-full text-sm">
@@ -289,11 +326,16 @@ export default {
 								rsvpHtml = `<p class="text-gray-500">No RSVPs yet.</p>`;
 							}
 
+							// Build the iframe embed code for particular event.
+							const embedCode = `<iframe src="${url.origin}/?event=${eventId}" width="600" height="400" frameborder="0"></iframe>`;
+
 							cardsHtml += `
 							<div class="bg-gray-900 rounded-md shadow-md p-3 mb-4 cursor-pointer event-card"
+							     data-event-id="${eventId}"
 							     data-event-name="${event.name}"
 							     data-event-date="Date: ${event.date}${event.timezone ? " | Timezone: " + event.timezone : ""}"
-							     data-rsvp='${JSON.stringify(rsvpHtml)}'>
+							     data-rsvp='${JSON.stringify(rsvpHtml)}'
+							     data-embed='${JSON.stringify(embedCode)}'>
 							  <h2 class="text-xl font-bold">${event.name}</h2>
 							  <p class="text-sm text-gray-500 mt-1">Date: ${event.date}${event.timezone ? " | " + event.timezone : ""}</p>
 							  <p class="mt-1 text-sm">${event.description}</p>
@@ -325,14 +367,70 @@ export default {
 							<script>
 							  document.querySelectorAll('.event-card').forEach(card => {
 								card.addEventListener('click', function() {
+								  const eventId = card.getAttribute('data-event-id');
 								  const eventName = card.getAttribute('data-event-name');
 								  const eventDate = card.getAttribute('data-event-date');
 								  const rsvpHtml = JSON.parse(card.getAttribute('data-rsvp'));
+								  const embedCode = JSON.parse(card.getAttribute('data-embed'));
+								  const shareUrl = "${url.origin}" + "/?event=" + eventId;
 								  const modalContent = document.getElementById('modalContent');
-								  modalContent.innerHTML = '<h2 class="text-2xl font-bold mb-2">' + eventName + '</h2>' +
-								                             '<p class="text-sm mb-4">' + eventDate + '</p>' +
-								                             rsvpHtml;
+								  modalContent.innerHTML =
+									'<h2 class="text-2xl font-bold mb-2">' + eventName + '</h2>' +
+									'<p class="text-sm mb-4">' + eventDate + '</p>' +
+									rsvpHtml +
+									'<div class="mt-4">' +
+									  '<button id="showEmbedBtn" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded text-sm font-semibold">Show Embed Code</button>' +
+									  '<div id="embedSection" class="mt-4 hidden">' +
+										'<textarea id="embedTextarea" class="w-full p-2 rounded bg-gray-800 border border-gray-700" rows="3" readonly>' + embedCode + '</textarea>' +
+										'<button id="copyEmbedInModalBtn" class="mt-2 bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded font-medium">Copy Embed Code</button>' +
+									  '</div>' +
+									'</div>' +
+									'<div class="mt-4">' +
+									  '<p class="mb-2">Share this event:</p>' +
+									  '<div class="flex space-x-2">' +
+										'<a id="whatsAppShareModal" href="#" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded">WhatsApp</a>' +
+										'<a id="emailShareModal" href="#" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded">Email</a>' +
+										'<button id="nativeShareBtnModal" class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-2 rounded">Share</button>' +
+									  '</div>' +
+									'</div>';
 								  document.getElementById('modalOverlay').classList.remove('hidden');
+
+								  document.getElementById('showEmbedBtn').addEventListener('click', function() {
+									document.getElementById('embedSection').classList.toggle('hidden');
+								  });
+
+								  document.getElementById('copyEmbedInModalBtn').addEventListener('click', function() {
+									const embedTextarea = document.getElementById('embedTextarea');
+									embedTextarea.select();
+									embedTextarea.setSelectionRange(0, 99999);
+									navigator.clipboard.writeText(embedTextarea.value)
+									  .then(() => { alert('Embed code copied to clipboard!'); })
+									  .catch(err => { alert('Failed to copy embed code.'); });
+								  });
+
+								  document.getElementById('whatsAppShareModal').setAttribute(
+									"href",
+									"https://wa.me/?text=" + encodeURIComponent("Check out this RSVP page: " + shareUrl)
+								  );
+								  document.getElementById('emailShareModal').setAttribute(
+									"href",
+									"mailto:?subject=" + encodeURIComponent("RSVP Invitation") + "&body=" + encodeURIComponent("Check out this RSVP page: " + shareUrl)
+								  );
+								  document.getElementById('nativeShareBtnModal').addEventListener('click', async function() {
+									if (navigator.share) {
+									  try {
+										await navigator.share({
+										  title: "RSVP Invitation",
+										  text: "Check out this RSVP page!",
+										  url: shareUrl,
+										});
+									  } catch (err) {
+										console.error("Error sharing:", err);
+									  }
+									} else {
+									  alert("Native sharing is not supported on this device.");
+									}
+								  });
 								});
 							  });
 							  document.getElementById('modalClose').addEventListener('click', function() {

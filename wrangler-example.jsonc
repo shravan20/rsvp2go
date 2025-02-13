@@ -13,7 +13,11 @@
 	"kv_namespaces": [
 		{ "binding": "EVENTS", "id": "copy_id" },
 		{ "binding": "RSVPS", "id": "copy_id" }
-	]
+	],
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS"
+	}
 
 	/**
 	 * Smart Placement
