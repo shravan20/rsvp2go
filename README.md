@@ -1,13 +1,25 @@
-# rsvp2go
+<p align="center">
+  <img align="center" width="20%" src="public/logo.png" alt="logo"/>
+</p>
 
-A simple, self-hosted RSVP system built on Cloudflare Workers. Create events, share RSVP links, and collect responses—all running on the edge.
+---
+
+<p >
+  A simple, no-nonsense, self-hosted RSVP system built on Cloudflare Workers. Create events, share RSVP links, and collect responses—all running on the edge. Open-source!
+</p>
+
+<p align="center">
+  <img src="https://madewithlove.now.sh/in?heart=true&colorA=%23ff671f&colorB=%23046a38&text=India" alt="Made with Love in India">
+</p>
+
+
 
 ## Features
 
-🎉 Create Events: Easily create events with a name, date, and description.
-📨 RSVP Links: Get a unique link to share with attendees.
-📝 Collect Responses: Store RSVPs securely using Cloudflare KV.
-🌐 Embeddable: Embed the RSVP form on any website.
+- 🎉 Create Events: Easily create events with a name, date, and description.
+- 📨 RSVP Links: Get a unique link to share with attendees.
+- 📝 Collect Responses: Store RSVPs securely using Cloudflare KV.
+- 🌐 Embeddable: Embed the RSVP form on any website.
 
 ## Quick Start
 
