@@ -16,7 +16,7 @@ export default {
 		  </div>
 
 		  <footer class="mt-8 text-center text-sm text-gray-500">
-			<a href="https://github.com/your-github-repo" target="_blank"
+			<a href="https://github.com/shravan20/rsvp2go" target="_blank"
 				class="inline-flex items-center px-4 py-2 border border-gray-500 rounded hover:bg-gray-700 hover:text-white transition-colors">
 				<img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub Logo" class="h-5 w-5 mr-2">
 				<span>View on GitHub</span>
